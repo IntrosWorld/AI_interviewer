@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coding Ability Test</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css" />
+  <style>
+    :root {
+      --bg-1: #f8f4ec;
+      --bg-2: #efe8dc;
+      --surface: #ffffff;
+      --ink: #171717;
+      --muted: #6a6864;
+      --line: #e6ddcf;
+      --primary: #e56d00;
+      --primary-dark: #c85f00;
+      --ok: #19b97b;
+      --warn: #c77b00;
+      --danger: #d94646;
+      --shadow: 0 24px 56px rgba(0, 0, 0, 0.1);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Sora", "Segoe UI", sans-serif;
+      min-height: 100vh;
+      background:
+        radial-gradient(1200px 420px at 15% -10%, #fff8ef 0%, transparent 70%),
+        radial-gradient(900px 360px at 100% 0%, #f1f6ff 0%, transparent 70%),
+        linear-gradient(165deg, var(--bg-1), var(--bg-2));
+      color: var(--ink);
+      padding: 24px;
+      overflow-x: hidden;
+    }
+
+    .layout {
+      max-width: 1260px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .left {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      align-self: start;
+    }
+
+    .title {
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-top: 8px;
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: #f9f5ee;
+    }
+
+    .status.ok {
+      color: var(--ok);
+      border-color: #ccefe1;
+      background: #f3fcf8;
+    }
+
+    .status.warn {
+      color: var(--warn);
+      border-color: #f0ddb7;
+      background: #fff9ef;
+    }
+
+    .label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .field,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      padding: 11px 12px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #d9903a;
+      box-shadow: 0 0 0 3px rgba(229, 109, 0, 0.12);
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease, opacity 0.2s ease;
+      font-size: 14px;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .btn.primary:hover:not(:disabled) {
+      background: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+
+    .btn.soft {
+      background: #f6f1e7;
+      color: #2f2d2a;
+      border-color: var(--line);
+    }
+
+    .btn.danger {
+      background: #fff3f3;
+      color: var(--danger);
+      border-color: #f2d0d0;
+    }
+
+    .right {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      min-width: 0;
+    }
+
+    .editor-wrap {
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 12px;
+      min-height: 0;
+      min-width: 0;
+      height: clamp(360px, 52vh, 620px);
+    }
+
+    .editor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .editor-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      background: #f7f1e7;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+    }
+
+    .editor-shell {
+      min-height: 0;
+      height: 100%;
+      border-radius: var(--radius-md);
+      border: 1px solid #2b2b31;
+      overflow: hidden;
+      background: #1e1e1e;
+    }
+
+    #code-editor {
+      width: 100%;
+      min-height: 0;
+      height: 100%;
+      resize: none;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      line-height: 1.45;
+      background: #0f0f12;
+      color: #f2f2f2;
+      border-color: #2b2b31;
+    }
+
+    .CodeMirror {
+      height: 100%;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      background: #1e1e1e;
+    }
+
+    .CodeMirror-gutters {
+      border-right: 1px solid #2f2f2f;
+      background: #161616;
+    }
+
+    .CodeMirror-activeline-background {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .sync-text {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .transcript {
+      height: clamp(250px, 34vh, 420px);
+      overflow-y: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: #fcfaf5;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      min-width: 0;
+    }
+
+    .line {
+      margin-bottom: 12px;
+    }
+
+    .line .speaker {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .line .text {
+      display: block;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (max-width: 1040px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .right {
+        gap: 16px;
+      }
+
+      .editor-wrap {
+        height: 420px;
+      }
+
+      .transcript {
+        height: 280px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <section class="panel left">
+      <a href="/" class="btn soft">Back to Interview Page</a>
+      <div>
+        <div class="title">Coding Ability Test</div>
+        <p class="muted">Direct coding assessment mode. Pick language and topic, then Gemini gives a coding problem immediately.</p>
+      </div>
+
+      <div class="row">
+        <span id="conn-status" class="status">Disconnected</span>
+        <span id="sync-status" class="status">Idle</span>
+      </div>
+
+      <div>
+        <label class="label" for="language">Language</label>
+        <select id="language">
+          <option value="">Select language</option>
+          <option value="JavaScript">JavaScript</option>
+          <option value="TypeScript">TypeScript</option>
+          <option value="Python">Python</option>
+          <option value="Java">Java</option>
+          <option value="C++">C++</option>
+          <option value="Go">Go</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="label" for="topic">Topic</label>
+        <input id="topic" class="field" type="text" placeholder="e.g. Arrays, Graphs, DP, System Design coding" />
+      </div>
+
+      <div class="row">
+        <button id="start-btn" class="btn primary" type="button" disabled>Start Coding Test</button>
+        <button id="end-btn" class="btn danger" type="button" disabled>End Session</button>
+      </div>
+
+      <p class="muted">Token optimization mode: nothing is sent for review while you type. Say "can you check now" or click Review Now when you want feedback.</p>
+    </section>
+
+    <section class="right">
+      <section class="panel editor-wrap">
+        <div class="editor-head">
+          <div>
+            <div class="title" style="font-size:20px; margin:0;">Live Code Editor</div>
+            <div class="sync-text" id="editor-note">Start session to enable live review.</div>
+          </div>
+          <div class="editor-meta">
+            <span id="editor-lang-pill" class="meta-pill">Mode: none</span>
+            <span id="editor-stats-pill" class="meta-pill">0 lines | 0 chars</span>
+          </div>
+          <div class="row">
+            <button id="voice-btn" class="btn soft" type="button" disabled>Enable Voice Trigger</button>
+            <button id="review-now-btn" class="btn soft" type="button" disabled>Review Now</button>
+          </div>
+        </div>
+
+        <div class="editor-shell">
+          <textarea id="code-editor" placeholder="Write your solution here..." disabled></textarea>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="title" style="font-size:20px; margin-bottom:10px;">Transcript</div>
+        <div id="transcript" class="transcript"></div>
+      </section>
+    </section>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/go/go.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+
+  <script>
+    const languageSelect = document.getElementById('language');
+    const topicInput = document.getElementById('topic');
+    const startBtn = document.getElementById('start-btn');
+    const endBtn = document.getElementById('end-btn');
+    const voiceBtn = document.getElementById('voice-btn');
+    const reviewNowBtn = document.getElementById('review-now-btn');
+    const codeEditor = document.getElementById('code-editor');
+    const editorLangPill = document.getElementById('editor-lang-pill');
+    const editorStatsPill = document.getElementById('editor-stats-pill');
+    const transcript = document.getElementById('transcript');
+    const connStatus = document.getElementById('conn-status');
+    const syncStatus = document.getElementById('sync-status');
+    const editorNote = document.getElementById('editor-note');
+
+    let ws = null;
+    let started = false;
+    let geminiLine = null;
+    let geminiLineTimer = null;
+    let syncTimer = null;
+    let audioContext = null;
+    let audioQueue = [];
+    let queueProcessing = false;
+    let nextStartTime = 0;
+    let audioUnlockNoticeShown = false;
+    let editor = null;
+    let lastReviewedCode = '';
+    let voiceTriggerEnabled = false;
+    let speechRecognition = null;
+    let lastVoiceTriggerAt = 0;
+    let voiceRestartTimer = null;
+
+    const LANGUAGE_TO_MODE = {
+      JavaScript: 'javascript',
+      TypeScript: 'text/typescript',
+      Python: 'python',
+      Java: 'text/x-java',
+      'C++': 'text/x-c++src',
+      Go: 'go',
+    };
+
+    const VOICE_TRIGGER_PATTERNS = [
+      'can you check now',
+      'can you check',
+      'check now',
+      'review now',
+      'can u check now',
+      'can u check',
+      'canyou check now',
+      'canyou check',
+      'anyou check',
+      'please check',
+      'please review',
+      'check my code',
+      'review my code',
+      'is it okay',
+      'is this okay',
+      'have i done correctly',
+      'did i do it correctly',
+      'is this correct',
+      'is this right',
+      'am i correct',
+      'have i done this correctly',
+    ];
+    const VOICE_TRIGGER_COOLDOWN_MS = 2500;
+
+    function appendLine(speaker, text) {
+      const line = document.createElement('div');
+      line.className = 'line';
+      const speakerNode = document.createElement('span');
+      speakerNode.className = 'speaker';
+      speakerNode.textContent = speaker;
+      const textNode = document.createElement('span');
+      textNode.className = 'text';
+      textNode.textContent = text;
+      line.appendChild(speakerNode);
+      line.appendChild(textNode);
+      transcript.appendChild(line);
+      transcript.scrollTop = transcript.scrollHeight;
+      return textNode;
+    }
+
+    function sanitizeGeminiChunk(chunk) {
+      if (!chunk) return '';
+      return chunk
+        .replaceAll('[[OPEN_EDITOR]]', '')
+        .replaceAll('[[CLOSE_EDITOR]]', '')
+        .replace(/\\text\{([^}]*)\}/g, '$1')
+        .replaceAll('\\le', '<=')
+        .replace(/\$/g, '');
+    }
+
+    function appendGemini(chunk) {
+      const cleanChunk = sanitizeGeminiChunk(chunk);
+      if (!cleanChunk) return;
+      if (!geminiLine) {
+        geminiLine = appendLine('Gemini', '');
+      }
+
+      const prev = geminiLine.textContent || '';
+      if (!prev) {
+        geminiLine.textContent = cleanChunk;
+      } else {
+        const prevChar = prev[prev.length - 1];
+        const nextChar = cleanChunk[0];
+        const needsSpace = !/\s/.test(prevChar) && !/\s/.test(nextChar) && /[A-Za-z0-9)]/.test(prevChar) && /[A-Za-z0-9(]/.test(nextChar);
+        geminiLine.textContent = needsSpace ? `${prev} ${cleanChunk}` : `${prev}${cleanChunk}`;
+      }
+
+      if (geminiLineTimer) {
+        clearTimeout(geminiLineTimer);
+      }
+      geminiLineTimer = setTimeout(() => {
+        geminiLine = null;
+      }, 900);
+      transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    function base64ToFloat32AudioData(base64String) {
+      const byteCharacters = atob(base64String);
+      const byteArray = new Uint8Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteArray[i] = byteCharacters.charCodeAt(i);
+      }
+      const length = byteArray.length / 2;
+      const float32AudioData = new Float32Array(length);
+      for (let i = 0; i < length; i++) {
+        let sample = byteArray[i * 2] | (byteArray[i * 2 + 1] << 8);
+        if (sample >= 32768) sample -= 65536;
+        float32AudioData[i] = sample / 32768;
+      }
+      return float32AudioData;
+    }
+
+    function getSampleRate(mimeType) {
+      if (!mimeType) return 24000;
+      const match = mimeType.match(/rate=(\d+)/);
+      return match ? parseInt(match[1], 10) : 24000;
+    }
+
+    async function ensureAudioContextUnlocked() {
+      const ContextCtor = window.AudioContext || window.webkitAudioContext;
+      if (!ContextCtor) {
+        return false;
+      }
+      if (!audioContext || audioContext.state === 'closed') {
+        audioContext = new ContextCtor();
+        nextStartTime = audioContext.currentTime;
+      }
+      if (audioContext.state === 'suspended') {
+        try {
+          await audioContext.resume();
+        } catch (_error) {
+          return false;
+        }
+      }
+      return audioContext.state === 'running';
+    }
+
+    async function playAudioQueue() {
+      if (queueProcessing) {
+        return;
+      }
+      queueProcessing = true;
+      try {
+        const unlocked = await ensureAudioContextUnlocked();
+        if (!unlocked) {
+          setSync('Audio blocked by browser. Click Start again.', 'warn');
+          if (!audioUnlockNoticeShown) {
+            appendLine('System', 'Audio is blocked by autoplay policy. Click Start Coding Test again to enable voice.');
+            audioUnlockNoticeShown = true;
+          }
+          return;
+        }
+        audioUnlockNoticeShown = false;
+
+        while (audioQueue.length > 0) {
+          const { data, mimeType } = audioQueue.shift();
+          if (!data) {
+            continue;
+          }
+
+          const samples = base64ToFloat32AudioData(data);
+          const sampleRate = getSampleRate(mimeType);
+          const buffer = audioContext.createBuffer(1, samples.length, sampleRate);
+          buffer.copyToChannel(samples, 0);
+
+          const source = audioContext.createBufferSource();
+          source.buffer = buffer;
+          source.connect(audioContext.destination);
+
+          if (nextStartTime < audioContext.currentTime) {
+            nextStartTime = audioContext.currentTime;
+          }
+          source.start(nextStartTime);
+          nextStartTime += buffer.duration;
+        }
+      } catch (_error) {
+        setSync('Audio playback error', 'warn');
+      } finally {
+        queueProcessing = false;
+      }
+    }
+
+    function setConn(connected) {
+      connStatus.textContent = connected ? 'Connected' : 'Disconnected';
+      connStatus.className = connected ? 'status ok' : 'status';
+    }
+
+    function setSync(text, type) {
+      syncStatus.textContent = text;
+      syncStatus.className = type === 'warn' ? 'status warn' : (type === 'ok' ? 'status ok' : 'status');
+    }
+
+    function setEditorValue(value) {
+      if (editor) {
+        editor.setValue(value || '');
+        return;
+      }
+      codeEditor.value = value || '';
+    }
+
+    function getEditorValue() {
+      if (editor) {
+        return editor.getValue();
+      }
+      return codeEditor.value;
+    }
+
+    function setEditorEnabled(enabled) {
+      if (editor) {
+        editor.setOption('readOnly', enabled ? false : 'nocursor');
+        editor.refresh();
+        return;
+      }
+      codeEditor.disabled = !enabled;
+    }
+
+    function updateCodeStats() {
+      const code = getEditorValue();
+      const lines = code ? code.split('\n').length : 0;
+      const chars = code.length;
+      editorStatsPill.textContent = `${lines} lines | ${chars} chars`;
+    }
+
+    function updateEditorMode(language) {
+      const mode = LANGUAGE_TO_MODE[language] || 'text/plain';
+      if (editor) {
+        editor.setOption('mode', mode);
+      }
+      editorLangPill.textContent = `Mode: ${language || 'none'}`;
+    }
+
+    function initEditor() {
+      if (!window.CodeMirror) {
+        codeEditor.addEventListener('input', () => {
+          updateCodeStats();
+          queueDraftOnly();
+        });
+        updateCodeStats();
+        return;
+      }
+
+      editor = window.CodeMirror.fromTextArea(codeEditor, {
+        mode: 'text/plain',
+        theme: 'material-darker',
+        lineNumbers: true,
+        styleActiveLine: true,
+        matchBrackets: true,
+        autoCloseBrackets: true,
+        indentUnit: 2,
+        tabSize: 2,
+        lineWrapping: false,
+        readOnly: 'nocursor',
+        extraKeys: {
+          'Ctrl-Enter': () => requestCodeReview(),
+          'Cmd-Enter': () => requestCodeReview(),
+        },
+      });
+
+      editor.on('change', () => {
+        updateCodeStats();
+        queueDraftOnly();
+      });
+      editor.refresh();
+      updateCodeStats();
+    }
+
+    function normalizeCode(code) {
+      return code.replace(/\r\n/g, '\n').trimEnd();
+    }
+
+    function teardownRecognition() {
+      if (!speechRecognition) {
+        return;
+      }
+      try {
+        speechRecognition.onresult = null;
+        speechRecognition.onerror = null;
+        speechRecognition.onend = null;
+        speechRecognition.stop();
+      } catch (_error) {
+        // No-op: recognition may already be stopped.
+      }
+      speechRecognition = null;
+    }
+
+    function stopVoiceTriggerInternal() {
+      voiceTriggerEnabled = false;
+      teardownRecognition();
+      if (voiceRestartTimer) {
+        clearTimeout(voiceRestartTimer);
+        voiceRestartTimer = null;
+      }
+      voiceBtn.classList.remove('danger');
+      voiceBtn.classList.remove('primary');
+      voiceBtn.classList.add('soft');
+      voiceBtn.textContent = 'Enable Voice Trigger';
+    }
+
+    function maybeTriggerVoiceReview(transcript) {
+      const text = String(transcript || '').toLowerCase();
+      if (!text) {
+        return;
+      }
+
+      const matched = VOICE_TRIGGER_PATTERNS.some((pattern) => text.includes(pattern));
+      if (!matched) {
+        return;
+      }
+      const now = Date.now();
+      if (now - lastVoiceTriggerAt < VOICE_TRIGGER_COOLDOWN_MS) {
+        return;
+      }
+      lastVoiceTriggerAt = now;
+
+      if (syncTimer) {
+        clearTimeout(syncTimer);
+        syncTimer = null;
+      }
+      appendLine('System', 'Voice trigger detected: review requested.');
+      requestCodeReview();
+    }
+
+    function createAndStartRecognition() {
+      const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognitionCtor) {
+        appendLine('System', 'Voice trigger is not supported in this browser.');
+        stopVoiceTriggerInternal();
+        return;
+      }
+
+      teardownRecognition();
+      speechRecognition = new SpeechRecognitionCtor();
+      speechRecognition.lang = 'en-US';
+      speechRecognition.continuous = true;
+      speechRecognition.interimResults = true;
+      speechRecognition.maxAlternatives = 1;
+
+      speechRecognition.onresult = (event) => {
+        let heard = '';
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const result = event.results[i];
+          if (result && result[0] && result[0].transcript) {
+            heard += ` ${result[0].transcript}`;
+          }
+        }
+        maybeTriggerVoiceReview(heard);
+      };
+
+      speechRecognition.onerror = (event) => {
+        const errorCode = event && event.error ? event.error : 'unknown';
+        if (errorCode === 'not-allowed' || errorCode === 'service-not-allowed') {
+          appendLine('System', `Voice trigger error: ${errorCode}. Re-enable microphone permission and try again.`);
+          stopVoiceTriggerInternal();
+          return;
+        }
+        if (errorCode === 'aborted') {
+          return;
+        }
+        appendLine('System', `Voice trigger temporary error: ${errorCode}. Retrying...`);
+      };
+
+      speechRecognition.onend = () => {
+        speechRecognition = null;
+        if (!voiceTriggerEnabled) {
+          return;
+        }
+        if (voiceRestartTimer) {
+          clearTimeout(voiceRestartTimer);
+        }
+        voiceRestartTimer = setTimeout(() => {
+          if (voiceTriggerEnabled && started && ws && ws.readyState === WebSocket.OPEN) {
+            createAndStartRecognition();
+          }
+        }, 350);
+      };
+
+      try {
+        speechRecognition.start();
+      } catch (_error) {
+        if (voiceRestartTimer) {
+          clearTimeout(voiceRestartTimer);
+        }
+        voiceRestartTimer = setTimeout(() => {
+          if (voiceTriggerEnabled && started && ws && ws.readyState === WebSocket.OPEN) {
+            createAndStartRecognition();
+          }
+        }, 500);
+      }
+    }
+
+    function startVoiceTrigger() {
+      if (!started || !ws || ws.readyState !== WebSocket.OPEN) {
+        appendLine('System', 'Start coding test first.');
+        return;
+      }
+      if (voiceTriggerEnabled) {
+        return;
+      }
+
+      voiceTriggerEnabled = true;
+      lastVoiceTriggerAt = 0;
+      createAndStartRecognition();
+
+      voiceBtn.classList.remove('soft');
+      voiceBtn.classList.add('primary');
+      voiceBtn.textContent = 'Disable Voice Trigger';
+      setSync('Listening for review trigger', 'ok');
+      appendLine('System', 'Voice trigger enabled. Say "can you check now" (or similar) to request review.');
+    }
+
+    function stopVoiceTrigger() {
+      const wasEnabled = voiceTriggerEnabled;
+      stopVoiceTriggerInternal();
+      if (started) {
+        setSync('Live review active', 'ok');
+      } else {
+        setSync('Idle', '');
+      }
+      if (wasEnabled) {
+        appendLine('System', 'Voice trigger disabled.');
+      }
+    }
+
+    function updateStartAvailability() {
+      const ready = Boolean(languageSelect.value && topicInput.value.trim());
+      startBtn.disabled = !ready || started;
+    }
+
+    function ensureSocket() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        return Promise.resolve();
+      }
+
+      if (ws && ws.readyState === WebSocket.CONNECTING) {
+        return new Promise((resolve, reject) => {
+          ws.addEventListener('open', () => resolve(), { once: true });
+          ws.addEventListener('error', () => reject(new Error('WebSocket error')), { once: true });
+        });
+      }
+
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${window.location.host}`);
+
+      return new Promise((resolve, reject) => {
+        ws.onopen = () => {
+          setConn(true);
+          resolve();
+        };
+
+        ws.onclose = () => {
+          setConn(false);
+        };
+
+        ws.onerror = () => {
+          setConn(false);
+          reject(new Error('WebSocket error'));
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'audioStream') {
+              audioQueue.push({ data: message.data, mimeType: message.mimeType });
+              playAudioQueue();
+            } else if (message.type === 'textStream') {
+              appendGemini(message.data);
+            } else if (message.type === 'error') {
+              appendLine('System', message.message || 'Server error');
+            }
+          } catch (error) {
+            appendLine('System', 'Unable to parse server response.');
+          }
+        };
+      });
+    }
+
+    function requestCodeReview() {
+      if (!started || !ws || ws.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
+      const code = normalizeCode(getEditorValue());
+      if (!code) {
+        setSync('Waiting for code', 'warn');
+        return;
+      }
+
+      const changed = code !== lastReviewedCode;
+      if (changed) {
+        lastReviewedCode = code;
+      }
+
+      ws.send(JSON.stringify({
+        type: 'liveCodeUpdate',
+        language: languageSelect.value,
+        topic: topicInput.value.trim(),
+        code: changed ? code : '',
+        requestReview: true,
+        codeChanged: changed,
+      }));
+
+      setSync(changed ? 'Review requested' : 'Follow-up review requested', 'ok');
+      editorNote.textContent = changed
+        ? `Review sent with latest draft at ${new Date().toLocaleTimeString()}`
+        : `Follow-up requested on same draft at ${new Date().toLocaleTimeString()}`;
+    }
+
+    function queueDraftOnly() {
+      if (!started) {
+        return;
+      }
+      setSync('Draft changed (not sent)', 'warn');
+      if (syncTimer) {
+        clearTimeout(syncTimer);
+      }
+      syncTimer = setTimeout(() => {
+        editorNote.textContent = 'Draft changed locally. Say "can you check now" or click Review Now.';
+      }, 350);
+    }
+
+    function resetState() {
+      started = false;
+      lastReviewedCode = '';
+      audioQueue = [];
+      queueProcessing = false;
+      nextStartTime = 0;
+      audioUnlockNoticeShown = false;
+      stopVoiceTriggerInternal();
+      setEditorEnabled(false);
+      voiceBtn.disabled = true;
+      reviewNowBtn.disabled = true;
+      endBtn.disabled = true;
+      updateStartAvailability();
+      setSync('Idle', '');
+      editorNote.textContent = 'Start session to enable live review.';
+      if (syncTimer) {
+        clearTimeout(syncTimer);
+        syncTimer = null;
+      }
+    }
+
+    languageSelect.addEventListener('change', () => {
+      updateStartAvailability();
+      updateEditorMode(languageSelect.value);
+    });
+    topicInput.addEventListener('input', updateStartAvailability);
+
+    startBtn.addEventListener('click', async () => {
+      const language = languageSelect.value;
+      const topic = topicInput.value.trim();
+      if (!language || !topic) {
+        return;
+      }
+
+      try {
+        const audioReady = await ensureAudioContextUnlocked();
+        if (!audioReady) {
+          appendLine('System', 'Browser blocked audio autoplay. Click Start Coding Test once more.');
+        }
+
+        await ensureSocket();
+        ws.send(JSON.stringify({
+          type: 'startCodingInterview',
+          language,
+          topic,
+        }));
+
+        appendLine('System', `Coding test started. Language: ${language}, Topic: ${topic}`);
+        started = true;
+        updateEditorMode(language);
+        setEditorEnabled(true);
+        voiceBtn.disabled = false;
+        reviewNowBtn.disabled = false;
+        endBtn.disabled = false;
+        startBtn.disabled = true;
+        languageSelect.disabled = true;
+        topicInput.disabled = true;
+        setSync('Live review active', 'ok');
+        editorNote.textContent = 'Draft stays local. Say "can you check now" or click Review Now when ready.';
+        if (editor) {
+          editor.refresh();
+          editor.focus();
+        }
+      } catch (error) {
+        appendLine('System', 'Could not start coding test.');
+      }
+    });
+
+    endBtn.addEventListener('click', () => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
+      }
+      audioContext = null;
+      stopVoiceTriggerInternal();
+      languageSelect.disabled = false;
+      topicInput.disabled = false;
+      resetState();
+      appendLine('System', 'Coding session ended.');
+    });
+
+    reviewNowBtn.addEventListener('click', () => {
+      if (syncTimer) {
+        clearTimeout(syncTimer);
+        syncTimer = null;
+      }
+      requestCodeReview();
+    });
+
+    voiceBtn.addEventListener('click', () => {
+      if (voiceTriggerEnabled) {
+        stopVoiceTrigger();
+      } else {
+        startVoiceTrigger();
+      }
+    });
+
+    document.addEventListener('pointerdown', () => {
+      if (!started) {
+        return;
+      }
+      ensureAudioContextUnlocked().then((ok) => {
+        if (ok && audioQueue.length > 0) {
+          playAudioQueue();
+        }
+      });
+    }, { passive: true });
+
+    initEditor();
+    updateEditorMode(languageSelect.value);
+    resetState();
+  </script>
+</body>
+</html>

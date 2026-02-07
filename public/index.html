@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview Meet - Gemini Live</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f2ea;
+      --surface: #ffffff;
+      --ink: #171717;
+      --muted: #6b6b6b;
+      --accent: #ff7a1a;
+      --accent-2: #2a6cf4;
+      --ok: #19b97b;
+      --danger: #e5484d;
+      --shadow: 0 24px 60px rgba(18, 18, 18, 0.12);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Space Grotesk", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #fff6ea 0%, var(--bg) 55%, #efe6d7 100%);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 32px 20px 48px;
+    }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-top: 6px;
+    }
+
+    .sub {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 14px;
+    }
+
+    .status-pill {
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #e7e0d5;
+      font-size: 12px;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #c2b8a9;
+    }
+
+    .status-pill.connected {
+      color: var(--ok);
+      border-color: #c7f0df;
+    }
+
+    .status-pill.connected .status-dot {
+      background: var(--ok);
+      box-shadow: 0 0 0 6px rgba(25, 185, 123, 0.15);
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.95fr) minmax(440px, 1.2fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .participant {
+      --avatar-size: 120px;
+      position: relative;
+      border-radius: var(--radius-xl);
+      background: var(--surface);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      min-height: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .participant.gemini {
+      --avatar-size: 122px;
+      min-height: 250px;
+    }
+
+    .participant.user {
+      --avatar-size: 182px;
+      min-height: 320px;
+      background: linear-gradient(176deg, #f7faff 0%, #ffffff 65%);
+    }
+
+    .participant.user::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      background: linear-gradient(to top, rgba(10, 18, 38, 0.58) 0%, rgba(10, 18, 38, 0.18) 34%, rgba(10, 18, 38, 0) 58%);
+      z-index: 1;
+    }
+
+    .participant::after {
+      content: "";
+      position: absolute;
+      inset: -40% 50% auto -40%;
+      height: 180px;
+      background: radial-gradient(circle, rgba(255, 122, 26, 0.1), transparent 70%);
+      pointer-events: none;
+    }
+
+    .participant.user::after {
+      inset: -40% -40% auto 50%;
+      background: radial-gradient(circle, rgba(42, 108, 244, 0.14), transparent 70%);
+    }
+
+    .participant-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .role-badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #f4efe7;
+      color: var(--muted);
+    }
+
+    .avatar-wrap {
+      position: relative;
+      width: var(--avatar-size);
+      height: var(--avatar-size);
+      z-index: 2;
+    }
+
+    .avatar-ring {
+      position: absolute;
+      inset: -10px;
+      border-radius: 50%;
+      border: 2px dashed rgba(23, 23, 23, 0.1);
+      transition: border-color 0.2s ease;
+    }
+
+    .avatar {
+      width: var(--avatar-size);
+      height: var(--avatar-size);
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffb078, #ff7a1a);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      font-weight: 600;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ai-avatar-icon {
+      width: 58%;
+      height: 58%;
+      fill: currentColor;
+      opacity: 0.95;
+    }
+
+    .user .avatar {
+      background: linear-gradient(135deg, #9bb8ff, #2a6cf4);
+    }
+
+    .avatar video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: none;
+    }
+
+    .avatar video.active {
+      display: block;
+    }
+
+    .avatar .fallback {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(24px, calc(var(--avatar-size) * 0.24), 44px);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .participant-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .participant-name {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .participant-title {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .participant-status {
+      font-size: 12px;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .participant-status span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #c2b8a9;
+    }
+
+    .participant.speaking .avatar-ring {
+      border-color: rgba(255, 122, 26, 0.7);
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+
+    .participant.user.speaking .avatar-ring {
+      border-color: rgba(42, 108, 244, 0.7);
+      animation: pulse-user 1.4s ease-in-out infinite;
+    }
+
+    .participant.speaking .participant-status {
+      color: var(--ink);
+    }
+
+    .participant.speaking .participant-status span {
+      background: var(--accent);
+    }
+
+    .participant.user.speaking .participant-status span {
+      background: var(--accent-2);
+    }
+
+    .participant.user.camera-on {
+      justify-content: space-between;
+      background: #111827;
+    }
+
+    .participant.user.camera-on::before {
+      opacity: 1;
+    }
+
+    .participant.user.camera-on .avatar-wrap {
+      position: absolute;
+      inset: 0;
+      width: auto;
+      height: auto;
+      z-index: 0;
+    }
+
+    .participant.user.camera-on .avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: var(--radius-xl);
+      background: #111827;
+    }
+
+    .participant.user.camera-on .avatar video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: var(--radius-xl);
+      object-fit: cover;
+    }
+
+    .participant.user.camera-on .avatar-ring {
+      inset: 10px;
+      border-radius: 22px;
+      border-color: rgba(255, 255, 255, 0.28);
+    }
+
+    .participant.user.camera-on .participant-name,
+    .participant.user.camera-on .participant-title,
+    .participant.user.camera-on .participant-status,
+    .participant.user.camera-on .role-badge {
+      color: #f3f4f6;
+    }
+
+    .participant.user.camera-on .role-badge {
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 122, 26, 0.3); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 18px rgba(255, 122, 26, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 122, 26, 0); }
+    }
+
+    @keyframes pulse-user {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(42, 108, 244, 0.3); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 18px rgba(42, 108, 244, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(42, 108, 244, 0); }
+    }
+
+    .panel {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) minmax(300px, 1.3fr);
+      gap: 20px;
+    }
+
+    .panel-section {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    .helper {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    .input-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .input-row input,
+    .input-row select,
+    textarea {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #e5dccf;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease;
+      font-family: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .input-row input:focus,
+    .input-row select:focus,
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(255, 122, 26, 0.2);
+    }
+
+    .btn.secondary {
+      background: #f5efe6;
+      color: #2d2d2d;
+    }
+
+    .btn.danger {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .chip {
+      border: 1px solid #e5dccf;
+      background: #faf6f0;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--ink);
+    }
+
+    .coding-panel {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #efe5d7;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .coding-panel.hidden {
+      display: none;
+    }
+
+    .coding-status {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .editor-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .editor-controls select {
+      width: 150px;
+      flex: 0 0 auto;
+    }
+
+    #code-editor {
+      width: 100%;
+      min-height: 180px;
+      resize: vertical;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+      background: #0f0f0f;
+      color: #e7e7e7;
+      border-color: #2f2f2f;
+    }
+
+    .transcript {
+      height: 520px;
+      overflow-y: auto;
+      background: #fbf8f3;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      border: 1px solid #ece2d4;
+    }
+
+    .transcript-line {
+      margin-bottom: 12px;
+    }
+
+    .transcript-line .speaker {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .transcript-line .text {
+      display: block;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (max-width: 960px) {
+      .stage {
+        grid-template-columns: 1fr;
+      }
+
+      .participant.user {
+        --avatar-size: 146px;
+        min-height: 250px;
+      }
+
+      .panel {
+        grid-template-columns: 1fr;
+      }
+
+      .transcript {
+        height: 340px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Interview Meet</div>
+        <h1>Gemini Live Interview</h1>
+        <p class="sub">High-pressure interview simulation with live voice responses.</p>
+      </div>
+      <div id="connection-status" class="status-pill">
+        <span class="status-dot"></span>
+        <span id="status-text">Disconnected</span>
+      </div>
+    </header>
+
+    <main class="stage">
+      <section class="participant gemini" id="gemini-card">
+        <div class="participant-header">
+          <div class="role-badge">AI Interviewer</div>
+          <div class="participant-status" id="gemini-status">
+            <span></span>
+            Listening
+          </div>
+        </div>
+        <div class="avatar-wrap">
+          <div class="avatar-ring"></div>
+          <div class="avatar" aria-label="AI interviewer">
+            <svg class="ai-avatar-icon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+              <circle cx="32" cy="22" r="12"></circle>
+              <path d="M10 56c0-12 10-22 22-22s22 10 22 22H10z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="participant-meta">
+          <div class="participant-name">AI Interviewer</div>
+          <div class="participant-title">Powered by Gemini Live</div>
+        </div>
+      </section>
+
+      <section class="participant user" id="user-card">
+        <div class="participant-header">
+          <div class="role-badge">Candidate</div>
+          <div class="participant-status" id="user-status">
+            <span></span>
+            Offline
+          </div>
+        </div>
+        <div class="avatar-wrap">
+          <div class="avatar-ring"></div>
+          <div class="avatar">
+            <video id="user-video" autoplay muted playsinline></video>
+            <div class="fallback" id="user-fallback">You</div>
+          </div>
+        </div>
+        <div class="participant-meta">
+          <div class="participant-name">You</div>
+          <div class="participant-title" id="user-camera-label">Camera off</div>
+        </div>
+      </section>
+    </main>
+
+    <section class="panel">
+      <div class="panel-section">
+        <h2>Interview Controls</h2>
+
+        <div class="input-stack">
+          <div class="input-row">
+            <input id="interview-target-input" type="text" placeholder="Type interview target before start, e.g. Backend Engineer L4 at Stripe">
+          </div>
+
+          <div class="control-row">
+            <button class="btn primary" id="startBtn" type="button" disabled>Start Interview</button>
+            <button class="btn danger" id="stopBtn" type="button" disabled>End Interview</button>
+            <button class="btn secondary" id="cameraBtn" type="button">Enable Camera</button>
+            <a class="btn secondary" href="/coding">Coding Test Page</a>
+          </div>
+
+          <p class="helper">Interview starts only after you enter your target and click Start Interview.</p>
+
+          <form id="text-form" class="input-row">
+            <input id="text-input" type="text" placeholder="Type your answer" disabled>
+            <button class="btn secondary" type="submit" id="send-text-btn" disabled>Send</button>
+          </form>
+
+          <div class="chips">
+            <button class="chip" type="button" data-target="Software Engineer (Backend)">Software Engineer</button>
+            <button class="chip" type="button" data-target="Product Manager">Product Manager</button>
+            <button class="chip" type="button" data-target="Data Analyst">Data Analyst</button>
+          </div>
+        </div>
+
+        <div id="coding-panel" class="coding-panel hidden">
+          <h2>Coding Round</h2>
+          <div id="coding-status" class="coding-status">Inactive</div>
+          <div class="editor-controls">
+            <select id="code-language">
+              <option value="javascript">JavaScript</option>
+              <option value="typescript">TypeScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+              <option value="cpp">C++</option>
+            </select>
+            <button class="btn secondary" id="submit-code-btn" type="button">Submit Code</button>
+          </div>
+          <textarea id="code-editor" placeholder="Write code here..."></textarea>
+          <p class="helper">Token optimization: unchanged code is not sent again.</p>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h2>Transcript</h2>
+        <div id="transcript" class="transcript"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    let ws = null;
+    let audioContext = null;
+    let microphone = null;
+    let processor = null;
+    let isRecording = false;
+    let interviewStarted = false;
+    let interviewTarget = '';
+
+    let audioQueue = [];
+    let queueProcessing = false;
+    let nextStartTime = 0;
+    let geminiActiveSources = 0;
+    let userSpeakingTimer = null;
+
+    let cameraStream = null;
+    let cameraEnabled = false;
+
+    let geminiLine = null;
+    let geminiFinalizeTimer = null;
+    let controlBuffer = '';
+    let codingRoundOpen = false;
+    let lastSubmittedCodeSignature = '';
+
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const statusText = document.getElementById('status-text');
+    const statusPill = document.getElementById('connection-status');
+    const geminiCard = document.getElementById('gemini-card');
+    const userCard = document.getElementById('user-card');
+    const geminiStatus = document.getElementById('gemini-status');
+    const userStatus = document.getElementById('user-status');
+    const transcript = document.getElementById('transcript');
+    const textForm = document.getElementById('text-form');
+    const textInput = document.getElementById('text-input');
+    const sendTextBtn = document.getElementById('send-text-btn');
+    const interviewTargetInput = document.getElementById('interview-target-input');
+    const userVideo = document.getElementById('user-video');
+    const userFallback = document.getElementById('user-fallback');
+    const userCameraLabel = document.getElementById('user-camera-label');
+    const codingPanel = document.getElementById('coding-panel');
+    const codingStatus = document.getElementById('coding-status');
+    const codeEditor = document.getElementById('code-editor');
+    const codeLanguage = document.getElementById('code-language');
+    const submitCodeBtn = document.getElementById('submit-code-btn');
+
+    function setConnectionStatus(connected) {
+      statusText.textContent = connected ? 'Connected' : 'Disconnected';
+      statusPill.classList.toggle('connected', connected);
+      if (connected) {
+        geminiCard.classList.remove('speaking');
+        geminiStatus.innerHTML = '<span></span>Ready';
+      } else {
+        geminiCard.classList.remove('speaking');
+        geminiStatus.innerHTML = '<span></span>Offline';
+      }
+    }
+
+    function setGeminiSpeaking(isSpeaking) {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        geminiCard.classList.remove('speaking');
+        geminiStatus.innerHTML = '<span></span>Offline';
+        return;
+      }
+      geminiCard.classList.toggle('speaking', isSpeaking);
+      geminiStatus.innerHTML = '<span></span>' + (isSpeaking ? 'Speaking' : 'Ready');
+    }
+
+    function setUserSpeaking(isSpeaking) {
+      userCard.classList.toggle('speaking', isSpeaking);
+      if (!isRecording) {
+        userStatus.innerHTML = '<span></span>Offline';
+        return;
+      }
+      userStatus.innerHTML = '<span></span>' + (isSpeaking ? 'Speaking' : 'Listening');
+    }
+
+    function appendTranscriptLine(speaker, text) {
+      const line = document.createElement('div');
+      line.className = 'transcript-line';
+      const speakerEl = document.createElement('span');
+      speakerEl.className = 'speaker';
+      speakerEl.textContent = speaker;
+      const textEl = document.createElement('span');
+      textEl.className = 'text';
+      textEl.textContent = text;
+      line.appendChild(speakerEl);
+      line.appendChild(textEl);
+      transcript.appendChild(line);
+      transcript.scrollTop = transcript.scrollHeight;
+      return textEl;
+    }
+
+    function sanitizeGeminiChunk(chunk) {
+      if (!chunk) return '';
+      controlBuffer = (controlBuffer + chunk).slice(-300);
+
+      if (controlBuffer.includes('[[OPEN_EDITOR]]')) {
+        openCodingRound('Coding round started');
+        controlBuffer = controlBuffer.replaceAll('[[OPEN_EDITOR]]', '');
+      }
+      if (controlBuffer.includes('[[CLOSE_EDITOR]]')) {
+        closeCodingRound('Coding round ended');
+        controlBuffer = controlBuffer.replaceAll('[[CLOSE_EDITOR]]', '');
+      }
+
+      const lowerChunk = chunk.toLowerCase();
+      if (!codingRoundOpen && /(start coding round|coding round starts|write code in the editor|implement the function)/.test(lowerChunk)) {
+        openCodingRound('Coding round started');
+      }
+      if (codingRoundOpen && /(coding round ends|coding round is over|close the editor|end coding round|done with coding)/.test(lowerChunk)) {
+        closeCodingRound('Coding round ended');
+      }
+
+      return chunk
+        .replaceAll('[[OPEN_EDITOR]]', '')
+        .replaceAll('[[CLOSE_EDITOR]]', '');
+    }
+
+    function appendGeminiText(chunk) {
+      const cleanChunk = sanitizeGeminiChunk(chunk);
+      if (!cleanChunk) {
+        return;
+      }
+
+      if (!geminiLine) {
+        geminiLine = appendTranscriptLine('Gemini', '');
+      }
+      const previousText = geminiLine.textContent || '';
+      if (!previousText) {
+        geminiLine.textContent = cleanChunk;
+      } else {
+        const prevChar = previousText[previousText.length - 1];
+        const nextChar = cleanChunk[0];
+        const needsSpace =
+          !/\s/.test(prevChar) &&
+          !/\s/.test(nextChar) &&
+          (
+            (/[A-Za-z0-9)]/.test(prevChar) && /[A-Za-z0-9(]/.test(nextChar)) ||
+            (/[.,!?;:]/.test(prevChar) && /[A-Za-z0-9]/.test(nextChar))
+          );
+
+        geminiLine.textContent = needsSpace
+          ? `${previousText} ${cleanChunk}`
+          : `${previousText}${cleanChunk}`;
+      }
+
+      transcript.scrollTop = transcript.scrollHeight;
+      if (geminiFinalizeTimer) {
+        clearTimeout(geminiFinalizeTimer);
+      }
+      geminiFinalizeTimer = setTimeout(() => {
+        geminiLine = null;
+      }, 900);
+    }
+
+    function openCodingRound(statusMessage) {
+      codingRoundOpen = true;
+      codingPanel.classList.remove('hidden');
+      codingStatus.textContent = statusMessage;
+    }
+
+    function closeCodingRound(statusMessage) {
+      codingRoundOpen = false;
+      codingPanel.classList.add('hidden');
+      codingStatus.textContent = statusMessage;
+    }
+
+    function base64ToFloat32AudioData(base64String) {
+      const byteCharacters = atob(base64String);
+      const byteArray = new Uint8Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteArray[i] = byteCharacters.charCodeAt(i);
+      }
+      const length = byteArray.length / 2;
+      const float32AudioData = new Float32Array(length);
+      for (let i = 0; i < length; i++) {
+        let sample = byteArray[i * 2] | (byteArray[i * 2 + 1] << 8);
+        if (sample >= 32768) sample -= 65536;
+        float32AudioData[i] = sample / 32768;
+      }
+      return float32AudioData;
+    }
+
+    function getSampleRate(mimeType) {
+      if (!mimeType) return 24000;
+      const match = mimeType.match(/rate=(\d+)/);
+      return match ? parseInt(match[1], 10) : 24000;
+    }
+
+    async function playAudioQueue() {
+      queueProcessing = true;
+      if (!audioContext || audioContext.state === 'closed') {
+        audioContext = new AudioContext();
+        nextStartTime = audioContext.currentTime;
+      }
+
+      while (audioQueue.length > 0) {
+        const { data, mimeType } = audioQueue.shift();
+        const audioChunks = base64ToFloat32AudioData(data);
+        const sampleRate = getSampleRate(mimeType);
+
+        const audioBuffer = audioContext.createBuffer(1, audioChunks.length, sampleRate);
+        audioBuffer.copyToChannel(audioChunks, 0);
+
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+
+        geminiActiveSources += 1;
+        setGeminiSpeaking(true);
+
+        source.onended = () => {
+          geminiActiveSources = Math.max(0, geminiActiveSources - 1);
+          if (geminiActiveSources === 0) {
+            setGeminiSpeaking(false);
+          }
+        };
+
+        if (nextStartTime < audioContext.currentTime) {
+          nextStartTime = audioContext.currentTime;
+        }
+        source.start(nextStartTime);
+        nextStartTime += audioBuffer.duration;
+      }
+      queueProcessing = false;
+    }
+
+    function connectWebSocket() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        return Promise.resolve();
+      }
+      if (ws && ws.readyState === WebSocket.CONNECTING) {
+        return new Promise((resolve, reject) => {
+          ws.addEventListener('open', () => resolve(), { once: true });
+          ws.addEventListener('error', () => reject(new Error('WebSocket connection failed')), { once: true });
+        });
+      }
+
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${window.location.host}`);
+
+      return new Promise((resolve, reject) => {
+        ws.onopen = () => {
+          setConnectionStatus(true);
+          resolve();
+        };
+
+        ws.onmessage = async (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.type === 'audioStream') {
+              audioQueue.push({ data: message.data, mimeType: message.mimeType });
+              if (!queueProcessing) {
+                playAudioQueue();
+              }
+            } else if (message.type === 'textStream') {
+              appendGeminiText(message.data);
+            } else if (message.type === 'error') {
+              appendTranscriptLine('System', message.message || 'Server error');
+            }
+          } catch (error) {
+            console.error('Error parsing WebSocket message:', error);
+          }
+        };
+
+        ws.onerror = () => {
+          setConnectionStatus(false);
+          reject(new Error('WebSocket error'));
+        };
+
+        ws.onclose = () => {
+          setConnectionStatus(false);
+        };
+      });
+    }
+
+    async function startRecording() {
+      try {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 16000 });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            channelCount: 1,
+            sampleRate: 16000,
+            echoCancellation: true,
+            noiseSuppression: true,
+          },
+        });
+
+        microphone = audioContext.createMediaStreamSource(stream);
+        processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+        processor.onaudioprocess = (event) => {
+          if (!isRecording) return;
+          const inputData = event.inputBuffer.getChannelData(0);
+          const rms = Math.sqrt(inputData.reduce((sum, val) => sum + val * val, 0) / inputData.length);
+
+          if (rms > 0.02) {
+            if (userSpeakingTimer) clearTimeout(userSpeakingTimer);
+            setUserSpeaking(true);
+            userSpeakingTimer = setTimeout(() => setUserSpeaking(false), 250);
+          }
+
+          const pcm16 = convertFloat32ToInt16(inputData);
+          const base64Audio = arrayBufferToBase64(pcm16.buffer);
+
+          if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'realtimeInput', audioData: base64Audio }));
+          }
+        };
+
+        microphone.connect(processor);
+        processor.connect(audioContext.destination);
+        isRecording = true;
+        setUserSpeaking(false);
+      } catch (error) {
+        appendTranscriptLine('System', `Microphone error: ${error.message}`);
+      }
+    }
+
+    function stopRecording() {
+      isRecording = false;
+      if (processor) {
+        processor.disconnect();
+        processor = null;
+      }
+      if (microphone) {
+        microphone.disconnect();
+        microphone = null;
+      }
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
+      }
+      if (userSpeakingTimer) {
+        clearTimeout(userSpeakingTimer);
+        userSpeakingTimer = null;
+      }
+      setUserSpeaking(false);
+    }
+
+    function convertFloat32ToInt16(float32Array) {
+      const int16Array = new Int16Array(float32Array.length);
+      for (let i = 0; i < float32Array.length; i++) {
+        const s = Math.max(-1, Math.min(1, float32Array[i]));
+        int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+      }
+      return int16Array;
+    }
+
+    function arrayBufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return btoa(binary);
+    }
+
+    async function toggleCamera() {
+      if (cameraEnabled) {
+        if (cameraStream) {
+          cameraStream.getTracks().forEach((track) => track.stop());
+        }
+        cameraStream = null;
+        cameraEnabled = false;
+        userVideo.classList.remove('active');
+        userFallback.style.display = 'flex';
+        userCard.classList.remove('camera-on');
+        userCameraLabel.textContent = 'Camera off';
+        cameraBtn.textContent = 'Enable Camera';
+        return;
+      }
+
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        userVideo.srcObject = cameraStream;
+        userVideo.classList.add('active');
+        userFallback.style.display = 'none';
+        userCard.classList.add('camera-on');
+        userCameraLabel.textContent = 'Camera on';
+        cameraBtn.textContent = 'Disable Camera';
+        cameraEnabled = true;
+      } catch (error) {
+        userCard.classList.remove('camera-on');
+        appendTranscriptLine('System', 'Camera permission denied or unavailable.');
+      }
+    }
+
+    function sendTextTurn(text, speakerLabel) {
+      const message = text.trim();
+      if (!message || !ws || ws.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
+      ws.send(JSON.stringify({ type: 'contentUpdateText', text: message }));
+      appendTranscriptLine(speakerLabel || 'You', message);
+    }
+
+    function submitCode() {
+      if (!interviewStarted) {
+        appendTranscriptLine('System', 'Start interview before submitting code.');
+        return;
+      }
+      if (!codingRoundOpen) {
+        appendTranscriptLine('System', 'Coding round is not active.');
+        return;
+      }
+
+      const language = codeLanguage.value;
+      const code = codeEditor.value.replace(/\r\n/g, '\n').trim();
+      if (!code) {
+        appendTranscriptLine('System', 'Code editor is empty.');
+        return;
+      }
+
+      const signature = `${language}::${code}`;
+      if (signature === lastSubmittedCodeSignature) {
+        appendTranscriptLine('System', 'Skipped unchanged code submission to save tokens.');
+        return;
+      }
+
+      lastSubmittedCodeSignature = signature;
+      const payload = [
+        `CODE_SUBMISSION language=${language}`,
+        code,
+      ].join('\n');
+
+      sendTextTurn(payload, 'You (code)');
+    }
+
+    function resetSessionState() {
+      interviewStarted = false;
+      interviewTarget = '';
+      audioQueue = [];
+      queueProcessing = false;
+      nextStartTime = 0;
+      geminiActiveSources = 0;
+      controlBuffer = '';
+      geminiLine = null;
+      if (geminiFinalizeTimer) {
+        clearTimeout(geminiFinalizeTimer);
+        geminiFinalizeTimer = null;
+      }
+      closeCodingRound('Inactive');
+      textInput.disabled = true;
+      sendTextBtn.disabled = true;
+      interviewTargetInput.disabled = false;
+      startBtn.disabled = !interviewTargetInput.value.trim();
+      stopBtn.disabled = true;
+      setGeminiSpeaking(false);
+    }
+
+    interviewTargetInput.addEventListener('input', () => {
+      if (interviewStarted) {
+        return;
+      }
+      startBtn.disabled = !interviewTargetInput.value.trim();
+    });
+
+    textForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const text = textInput.value.trim();
+      if (!text) return;
+      if (!interviewStarted) {
+        appendTranscriptLine('System', 'Start interview first.');
+        return;
+      }
+      sendTextTurn(text, 'You');
+      textInput.value = '';
+    });
+
+    document.querySelectorAll('.chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        interviewTargetInput.value = chip.dataset.target || '';
+        if (!interviewStarted) {
+          startBtn.disabled = !interviewTargetInput.value.trim();
+        }
+      });
+    });
+
+    startBtn.addEventListener('click', async () => {
+      const target = interviewTargetInput.value.trim();
+      if (!target) {
+        appendTranscriptLine('System', 'Set interview target first.');
+        interviewTargetInput.focus();
+        return;
+      }
+
+      try {
+        await connectWebSocket();
+        interviewTarget = target;
+        ws.send(JSON.stringify({
+          type: 'startInterview',
+          interviewTarget,
+        }));
+
+        appendTranscriptLine('System', `Interview started for target: ${interviewTarget}`);
+
+        await startRecording();
+        interviewStarted = true;
+        textInput.disabled = false;
+        sendTextBtn.disabled = false;
+        interviewTargetInput.disabled = true;
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+      } catch (error) {
+        appendTranscriptLine('System', 'Failed to start interview session.');
+      }
+    });
+
+    stopBtn.addEventListener('click', () => {
+      stopRecording();
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+      resetSessionState();
+    });
+
+    submitCodeBtn.addEventListener('click', submitCode);
+    cameraBtn.addEventListener('click', toggleCamera);
+
+    resetSessionState();
+  </script>
+</body>
+</html>
