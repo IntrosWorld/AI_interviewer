@@ -34,6 +34,7 @@
       color: var(--ink);
       min-height: 100vh;
       padding: 32px 20px 48px;
+      overflow: hidden;
     }
 
     .page {
@@ -41,7 +42,9 @@
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 20px;
+      height: calc(100vh - 80px);
+      min-height: 0;
     }
 
     .topbar {
@@ -104,30 +107,31 @@
       grid-template-columns: minmax(320px, 0.95fr) minmax(440px, 1.2fr);
       gap: 20px;
       align-items: stretch;
+      flex: 0 0 auto;
     }
 
     .participant {
-      --avatar-size: 120px;
+      --avatar-size: 122px;
       position: relative;
       border-radius: var(--radius-xl);
       background: var(--surface);
-      padding: 24px;
+      padding: 16px;
       box-shadow: var(--shadow);
       overflow: hidden;
-      min-height: 250px;
+      min-height: 0;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
     }
 
     .participant.gemini {
       --avatar-size: 122px;
-      min-height: 250px;
+      min-height: 0;
     }
 
     .participant.user {
-      --avatar-size: 182px;
-      min-height: 320px;
+      --avatar-size: 122px;
+      min-height: 0;
       background: linear-gradient(176deg, #f7faff 0%, #ffffff 65%);
     }
 
@@ -204,8 +208,8 @@
     }
 
     .ai-avatar-icon {
-      width: 58%;
-      height: 58%;
+      width: 66%;
+      height: 66%;
       fill: currentColor;
       opacity: 0.95;
     }
@@ -237,12 +241,18 @@
       text-transform: uppercase;
     }
 
+    .participant.user .avatar .fallback {
+      font-size: clamp(26px, calc(var(--avatar-size) * 0.34), 46px);
+      letter-spacing: 0.01em;
+    }
+
     .participant-meta {
       display: flex;
       flex-direction: column;
       gap: 6px;
       position: relative;
       z-index: 3;
+      margin-top: 2px;
     }
 
     .participant-name {
@@ -358,6 +368,8 @@
       display: grid;
       grid-template-columns: minmax(260px, 1fr) minmax(300px, 1.3fr);
       gap: 20px;
+      flex: 1 1 auto;
+      min-height: 0;
     }
 
     .panel-section {
@@ -365,6 +377,26 @@
       border-radius: var(--radius-lg);
       padding: 20px;
       box-shadow: var(--shadow);
+      min-height: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .controls-section .input-stack {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 6px;
+      overscroll-behavior: contain;
+    }
+
+    .transcript-section .transcript {
+      flex: 1;
+      min-height: 0;
+      height: auto;
+      scroll-behavior: smooth;
+      overscroll-behavior: contain;
     }
 
     .panel h2 {
@@ -546,17 +578,30 @@
     }
 
     @media (max-width: 960px) {
+      body {
+        overflow: auto;
+      }
+
+      .page {
+        height: auto;
+      }
+
       .stage {
         grid-template-columns: 1fr;
       }
 
       .participant.user {
-        --avatar-size: 146px;
+        --avatar-size: 120px;
         min-height: 250px;
       }
 
       .panel {
         grid-template-columns: 1fr;
+      }
+
+      .controls-section .input-stack {
+        overflow: visible;
+        padding-right: 0;
       }
 
       .transcript {
@@ -626,7 +671,7 @@
     </main>
 
     <section class="panel">
-      <div class="panel-section">
+      <div class="panel-section controls-section">
         <h2>Interview Controls</h2>
 
         <div class="input-stack">
@@ -673,7 +718,7 @@
         </div>
       </div>
 
-      <div class="panel-section">
+      <div class="panel-section transcript-section">
         <h2>Transcript</h2>
         <div id="transcript" class="transcript"></div>
       </div>
