@@ -1,6 +1,6 @@
-# Gemini Live Agent Demo
+# Gemini Live Interviewer Demo
 
-A real-time voice chat application using Google's Gemini Live API with the official @google/genai SDK. Talk to Gemini using your microphone and hear responses in real-time with text transcription.
+A real-time interviewer experience using Google's Gemini Live API with the official @google/genai SDK. Talk to Gemini using your microphone and hear responses in real-time with text transcription.
 
 ## Features
 
