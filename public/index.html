@@ -124,6 +124,12 @@
       gap: 12px;
     }
 
+    .participant.gemini,
+    .participant.user {
+      align-items: center;
+      text-align: center;
+    }
+
     .participant.gemini {
       --avatar-size: 122px;
       min-height: 0;
@@ -196,7 +202,7 @@
       width: var(--avatar-size);
       height: var(--avatar-size);
       border-radius: 50%;
-      background: linear-gradient(135deg, #ffb078, #ff7a1a);
+      background: linear-gradient(135deg, #475569, #1f2937);
       color: #fff;
       display: flex;
       align-items: center;
@@ -215,7 +221,7 @@
     }
 
     .user .avatar {
-      background: linear-gradient(135deg, #9bb8ff, #2a6cf4);
+      background: linear-gradient(135deg, #6b7fd8, #2f3f9e);
     }
 
     .avatar video {
@@ -253,6 +259,7 @@
       position: relative;
       z-index: 3;
       margin-top: 2px;
+      align-items: center;
     }
 
     .participant-name {
